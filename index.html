@@ -1,272 +1,192 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Target Tag">
-  <link rel="apple-touch-icon" href="https://i.imgur.com/B0yKjTg.png">
-  <link rel="icon" href="https://i.imgur.com/B0yKjTg.png">
-  <link id="manifestLink" rel="manifest" href="manifest.webmanifest">
-  <title>Target Tag</title>
-  <style>
-    :root{
-      --accent:#ff3e3e; --glass:rgba(255,255,255,0.06); --panel:rgba(255,255,255,0.12);
-      --bg-a:#ff9f1c; --bg-b:#2ec4b6; --game-dark:#041826;
-    }
-    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-a),var(--bg-b));-webkit-font-smoothing:antialiased}
-    #app{max-width:420px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative}
-    header{display:flex;align-items:center;padding:12px}
-    h1{margin:0;font-size:20px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.25)}
-    #coinDisplay{margin-left:auto;background:var(--glass);padding:6px 10px;border-radius:10px;font-weight:700}
-
-    .main{flex:1;position:relative}
-    .panel-screen{position:absolute;left:12px;right:12px;top:12px;background:var(--panel);backdrop-filter:blur(6px);border-radius:14px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,0.35)}
-    .panel-screen.hidden{display:none}
-    .panel-title{font-size:18px;margin:6px 0}
-    .play-btn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:white;font-size:16px}
-
-    #gameArea{position:absolute;left:0;right:0;top:0;bottom:72px;background:linear-gradient(180deg,#07203a 0%, #02202a 100%);display:block;border-radius:12px;overflow:hidden}
-    .hud{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:60}
-    .stat{background:rgba(255,255,255,0.08);padding:8px;border-radius:8px;font-weight:700}
-
-    /* targets - improved bullseye image using CSS rings */
-    .target{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.45);transform-origin:center center;user-select:none}
-    .skin-default{background:conic-gradient(#fff 0 20deg,#e3342f 0 40deg,#fff 0 60deg,#e3342f 0 80deg,#fff 0 100deg);border:3px solid rgba(255,255,255,0.08)}
-    .skin-gold{background:conic-gradient(#fff 0 20deg,#ffd65a 0 40deg,#fff 0 60deg,#ffb700 0 80deg,#fff 0 100deg)}
-    .skin-blue{background:conic-gradient(#fff 0 20deg,#60a5fa 0 40deg,#fff 0 60deg,#2563eb 0 80deg,#fff 0 100deg)}
-    .skin-silver{background:conic-gradient(#fff 0 20deg,#e6eef8 0 40deg,#fff 0 60deg,#cbd5e1 0 80deg,#fff 0 100deg)}
-    .skin-bronze{background:conic-gradient(#fff 0 20deg,#c77b3a 0 40deg,#fff 0 60deg,#9b4b23 0 80deg,#fff 0 100deg)}
-
-    .size-small{width:48px;height:48px}
-    .size-medium{width:72px;height:72px}
-    .size-large{width:96px;height:96px}
-
-    .pop{animation:pop 180ms cubic-bezier(.2,.8,.2,1)}
-    @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
-
-    nav#bottomNav{position:fixed;left:0;right:0;bottom:0;height:72px;display:flex;align-items:center;justify-content:center;gap:18px;padding:10px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.22));backdrop-filter:blur(6px)}
-    .nav-btn{width:62px;height:52px;border-radius:12px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;color:#fff;border:none;font-size:18px}
-    .nav-btn.active{background:rgba(255,255,255,0.08)}
-
-    .items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
-    .item{background:rgba(255,255,255,0.04);padding:10px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:8px}
-    .preview{width:72px;height:72px;border-radius:10px;display:flex;align-items:center;justify-content:center}
-
-    .modal{position:fixed;left:12px;right:12px;top:20vh;background:var(--panel);padding:16px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.45);display:none;z-index:80}
-    .modal.active{display:block}
-    .modal h3{margin:6px 0}
-
-    /* high score list */
-    .highscores{margin-top:10px}
-    .hs-row{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:6px}
-
-    /* small responsive tweaks */
-    @media (max-width:420px){ #app{width:100vw} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Target Tag</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #ffcf00, #ff5e62);
+    font-family: 'Arial Rounded MT Bold', sans-serif;
+    overflow: hidden;
+  }
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .screen.active {
+    display: flex;
+  }
+  .title {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px rgba(0,0,0,0.4);
+  }
+  .btn {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin: 8px 0;
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .btn:active {
+    transform: scale(0.96);
+  }
+  #gameArea {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    background: radial-gradient(circle at center, #0072ff, #004c99);
+    overflow: hidden;
+  }
+  .target {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, white 0%, red 40%, white 60%, red 80%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
+  .hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-size: 16px;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+  .navBar {
+    height: 60px;
+    background: #222;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    color: white;
+  }
+  .navBtn {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    padding: 8px;
+  }
+  .popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    display: none;
+  }
+  .popup.active {
+    display: block;
+  }
+</style>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>🎯 Target Tag</h1>
-      <div id="coinDisplay">Coins: 0</div>
-    </header>
-
-    <div class="main">
-      <div id="homePanel" class="panel-screen">
-        <div class="panel-title">Tap targets — beat your high score!</div>
-        <button class="play-btn" id="playBtn">Play</button>
-        <div style="margin-top:10px" class="muted">Round length
-          <select id="roundLen">
-            <option value="20">20s</option>
-            <option value="30" selected>30s</option>
-            <option value="60">60s</option>
-          </select>
-        </div>
-        <div class="highscores">
-          <div style="margin-top:12px;font-weight:700">High Scores</div>
-          <div id="highList"></div>
-        </div>
-      </div>
-
-      <div id="shopPanel" class="panel-screen hidden">
-        <div class="panel-title">Shop</div>
-        <div class="items" id="shopItems"></div>
-      </div>
-
-      <div id="lockerPanel" class="panel-screen hidden">
-        <div class="panel-title">Locker</div>
-        <div class="items" id="lockerItems"></div>
-      </div>
-
-      <div id="gameArea">
-        <div class="hud">
-          <div class="stat">Score: <span id="score">0</span></div>
-          <div class="stat">Time: <span id="time">0</span></div>
-        </div>
-      </div>
-
-      <div id="endModal" class="modal" role="dialog" aria-modal="true">
-        <h3>Round Results</h3>
-        <div>Score: <strong id="modalScore">0</strong></div>
-        <div>Coins earned: <strong id="modalCoins">0</strong></div>
-        <div>Average time between clicks: <strong id="modalAvg">—</strong></div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-          <button id="modalHome">Home</button>
-          <button id="modalPlay">Play Again</button>
-        </div>
-      </div>
-
-    </div>
-
-    <nav id="bottomNav">
-      <button class="nav-btn active" id="navHome">🏠</button>
-      <button class="nav-btn" id="navShop">🛒</button>
-      <button class="nav-btn" id="navLocker">🧰</button>
-    </nav>
+<div id="app">
+  <div id="home" class="screen active">
+    <h1 class="title">🎯 Target Tag</h1>
+    <button class="btn" id="playBtn">Play</button>
   </div>
-
-  <script>
-    // --- manifest creation (helps desktop & Android PWAs) ---
-    (function createManifest(){
-      const manifest = {
-        name: 'Target Tag',
-        short_name: 'TargetTag',
-        start_url: '.',
-        display: 'standalone',
-        background_color: '#07203a',
-        icons: [{src:'https://i.imgur.com/B0yKjTg.png',sizes:'192x192',type:'image/png'},{src:'https://i.imgur.com/B0yKjTg.png',sizes:'512x512',type:'image/png'}]
-      };
-      const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const link = document.getElementById('manifestLink');
-      if(link) link.href = url;
-    })();
-
-    // --- Save / persistence ---
-    const SAVE_KEY = 'target-tag-save-v4';
-    const HS_KEY = 'target-tag-highscores-v1';
-    const defaultSave = { coins:0, owned:{ default:true }, equipped:'default' };
-    let save = loadSave();
-    function loadSave(){try{const raw = localStorage.getItem(SAVE_KEY); return raw? JSON.parse(raw): {...defaultSave};}catch(e){return {...defaultSave};}}
-    function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); updateUI(); }
-
-    function loadHighscores(){ try{ const raw = localStorage.getItem(HS_KEY); return raw? JSON.parse(raw): []; } catch(e){ return []; } }
-    function saveHighscores(list){ localStorage.setItem(HS_KEY, JSON.stringify(list)); }
-
-    // --- catalog ---
-    const catalog = [
-      {id:'gold',type:'skin',name:'Gold Target',price:15,css:'skin-gold'},
-      {id:'silver',type:'skin',name:'Silver Target',price:8,css:'skin-silver'},
-      {id:'bronze',type:'skin',name:'Bronze Target',price:5,css:'skin-bronze'},
-      {id:'blue',type:'skin',name:'Blue Target',price:6,css:'skin-blue'},
-      {id:'double',type:'power',name:'Double Points (30s)',price:20,effect:'double',duration:30},
-      {id:'slow',type:'power',name:'Slow Spawn (30s)',price:12,effect:'slow',duration:30},
-      {id:'rapid',type:'power',name:'Rapid Spawn (15s)',price:10,effect:'rapid',duration:15}
-    ];
-
-    // --- refs ---
-    const coinDisplay = document.getElementById('coinDisplay');
-    const scoreEl = document.getElementById('score');
-    const timeEl = document.getElementById('time');
-    const gameArea = document.getElementById('gameArea');
-    const shopItemsEl = document.getElementById('shopItems');
-    const lockerItemsEl = document.getElementById('lockerItems');
-    const highList = document.getElementById('highList');
-
-    const homePanel = document.getElementById('homePanel');
-    const shopPanel = document.getElementById('shopPanel');
-    const lockerPanel = document.getElementById('lockerPanel');
-
-    const endModal = document.getElementById('endModal');
-    const modalScore = document.getElementById('modalScore');
-    const modalCoins = document.getElementById('modalCoins');
-    const modalAvg = document.getElementById('modalAvg');
-
-    const navHome = document.getElementById('navHome');
-    const navShop = document.getElementById('navShop');
-    const navLocker = document.getElementById('navLocker');
-
-    // --- audio (WebAudio simple fx) ---
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
-    function ensureAudio(){ if(!audioCtx) audioCtx = new AudioCtx(); }
-    function playHit(){ try{ ensureAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sine'; o.frequency.value=880; g.gain.value=0.06; o.connect(g); g.connect(audioCtx.destination); o.start(); o.frequency.exponentialRampToValueAtTime(440,audioCtx.currentTime+0.12); setTimeout(()=>{o.stop()},140);}catch(e){} }
-    function playSpawn(){ try{ ensureAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='triangle'; o.frequency.value=400; g.gain.value=0.02; o.connect(g); g.connect(audioCtx.destination); o.start(); o.frequency.exponentialRampToValueAtTime(900,audioCtx.currentTime+0.08); setTimeout(()=>{o.stop()},120);}catch(e){} }
-
-    // vibration helper
-    function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
-
-    // --- build UI ---
-    function updateUI(){ coinDisplay.textContent = 'Coins: ' + save.coins; buildShop(); buildLocker(); renderHighscores(); }
-    function buildShop(){ shopItemsEl.innerHTML=''; for(const item of catalog){ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; if(item.type==='skin'){ const p=document.createElement('div'); p.className='target size-medium '+item.css; p.style.width='60px'; p.style.height='60px'; preview.appendChild(p);} else { preview.textContent=item.name;} const title=document.createElement('div'); title.textContent=item.name; const price=document.createElement('div'); price.textContent=item.price+' coins'; price.className='muted'; const btn=document.createElement('button'); btn.textContent = save.owned[item.id]? 'Owned':'Buy'; if(save.owned[item.id]) btn.disabled=true; btn.addEventListener('click',()=>buyItem(item)); div.appendChild(preview); div.appendChild(title); div.appendChild(price); div.appendChild(btn); shopItemsEl.appendChild(div);} }
-    function buildLocker(){ lockerItemsEl.innerHTML=''; for(const item of catalog.filter(i=>i.type==='skin')){ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; const p=document.createElement('div'); p.className='target size-medium '+item.css; p.style.width='60px'; p.style.height='60px'; preview.appendChild(p); const title=document.createElement('div'); title.textContent=item.name; const btn=document.createElement('button'); if(save.owned[item.id]){ btn.textContent = save.equipped===item.id? 'Equipped':'Equip'; if(save.equipped===item.id) btn.disabled=true; btn.addEventListener('click',()=>{ save.equipped=item.id; persist(); buildLocker(); }); } else { btn.textContent='Locked'; btn.disabled=true; } div.appendChild(preview); div.appendChild(title); div.appendChild(btn); lockerItemsEl.appendChild(div); }
-      for(const item of catalog.filter(i=>i.type==='power')){ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; preview.textContent=item.name; const title=document.createElement('div'); title.textContent = item.name + ' — ' + item.duration + 's'; const btn=document.createElement('button'); if(save.owned[item.id]){ btn.textContent='Use'; btn.addEventListener('click',()=>usePowerup(item.id)); } else { btn.textContent='Locked'; btn.disabled=true; } div.appendChild(preview); div.appendChild(title); div.appendChild(btn); lockerItemsEl.appendChild(div); }
+  <div id="shop" class="screen">
+    <h1 class="title">Shop</h1>
+  </div>
+  <div id="locker" class="screen">
+    <h1 class="title">Locker</h1>
+  </div>
+  <div id="game" class="screen">
+    <div id="gameArea">
+      <div class="hud" id="hud">Score: 0 | Time: 0</div>
+    </div>
+    <div class="popup" id="endPopup"></div>
+  </div>
+  <div class="navBar">
+    <div class="navBtn" data-screen="home">Home</div>
+    <div class="navBtn" data-screen="shop">Shop</div>
+    <div class="navBtn" data-screen="locker">Locker</div>
+  </div>
+</div>
+<script>
+  let score=0,timeLeft=0,clickTimes=[],coins=0;
+  if(localStorage.getItem('coins')) coins=parseInt(localStorage.getItem('coins'));
+  const screens=document.querySelectorAll('.screen');
+  document.querySelectorAll('.navBtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      showScreen(btn.dataset.screen);
+    });
+  });
+  function showScreen(id){
+    screens.forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  document.getElementById('playBtn').addEventListener('click',()=>{
+    score=0;clickTimes=[];timeLeft=20;
+    showScreen('game');
+    startGame();
+  });
+  function startGame(){
+    const hud=document.getElementById('hud');
+    const gameArea=document.getElementById('gameArea');
+    gameArea.innerHTML='<div class="hud" id="hud">Score: 0 | Time: '+timeLeft+'</div>';
+    let spawn=setInterval(()=>{
+      if(timeLeft<=0){clearInterval(spawn);endRound();return;}
+      let t=document.createElement('div');
+      t.className='target';
+      t.style.left=Math.random()*(gameArea.clientWidth-70)+'px';
+      t.style.top=Math.random()*(gameArea.clientHeight-70)+'px';
+      t.addEventListener('click',()=>{
+        score+=10;
+        clickTimes.push(Date.now());
+        hud.textContent='Score: '+score+' | Time: '+timeLeft;
+        t.remove();
+      });
+      gameArea.appendChild(t);
+      setTimeout(()=>t.remove(),1000);
+    },800);
+    let timer=setInterval(()=>{
+      timeLeft--;
+      hud.textContent='Score: '+score+' | Time: '+timeLeft;
+      if(timeLeft<=0) clearInterval(timer);
+    },1000);
+  }
+  function endRound(){
+    let avgClick='N/A';
+    if(clickTimes.length>1){
+      let diffs=[];
+      for(let i=1;i<clickTimes.length;i++) diffs.push(clickTimes[i]-clickTimes[i-1]);
+      avgClick=(diffs.reduce((a,b)=>a+b,0)/diffs.length/1000).toFixed(2)+'s';
     }
-
-    function buyItem(item){ if(save.owned[item.id]) return alert('Already owned'); if(save.coins < item.price) return alert('Not enough coins'); save.coins -= item.price; save.owned[item.id]=true; persist(); }
-
-    function renderHighscores(){ const list = loadHighscores(); highList.innerHTML=''; if(list.length===0){ highList.textContent='No scores yet — play to record your best!'; return; } list.slice(0,5).forEach((r,idx)=>{ const row=document.createElement('div'); row.className='hs-row'; row.innerHTML = `<div>#${idx+1} ${r.score}</div><div>${r.avg}</div>`; highList.appendChild(row); }); }
-
-    updateUI();
-
-    // --- screens ---
-    function hideAllPanels(){ homePanel.classList.add('hidden'); shopPanel.classList.add('hidden'); lockerPanel.classList.add('hidden'); }
-    function showPanel(name){ hideAllPanels(); if(name==='home') homePanel.classList.remove('hidden'); if(name==='shop') shopPanel.classList.remove('hidden'); if(name==='locker') lockerPanel.classList.remove('hidden'); }
-    function setActiveNav(btn){ document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-
-    navHome.addEventListener('click', ()=>{ showPanel('home'); setActiveNav(navHome); });
-    navShop.addEventListener('click', ()=>{ showPanel('shop'); setActiveNav(navShop); });
-    navLocker.addEventListener('click', ()=>{ showPanel('locker'); setActiveNav(navLocker); });
-
-    // --- gameplay ---
-    let running=false, score=0, timeLeft=0, spawnTimer=null, tickTimer=null; let lastCoinThreshold=0; let hitsTimestamps=[]; let coinsBeforeRound=0; let activePowerups={double:false,slow:false,rapid:false}; let powerupTimeouts=[];
-    const sizeMap = { small:48, medium:72, large:96 };
-
-    function startRound(){ clearRound(); coinsBeforeRound = save.coins; lastCoinThreshold = Math.floor(0/10); hitsTimestamps = []; activePowerups = {double:false,slow:false,rapid:false}; score=0; scoreEl.textContent=score; timeLeft = parseInt(document.getElementById('roundLen').value,10); timeEl.textContent = timeLeft; running=true; spawnLoop(); tickTimer = setInterval(()=>{ timeLeft--; timeEl.textContent = timeLeft; if(timeLeft<=0) endRound(); },1000); showPanel('home'); }
-    function clearRound(){ running=false; clearInterval(spawnTimer); clearInterval(tickTimer); powerupTimeouts.forEach(t=>clearTimeout(t)); powerupTimeouts=[]; document.querySelectorAll('.target').forEach(t=>t.remove()); }
-    function endRound(){ running=false; clearInterval(spawnTimer); clearInterval(tickTimer); // compute coins earned during round (stored as we awarded during hits)
-      // compute average
-      let avg = '—'; if(hitsTimestamps.length>=2){ const diffs=[]; for(let i=1;i<hitsTimestamps.length;i++) diffs.push(hitsTimestamps[i]-hitsTimestamps[i-1]); const meanMs = diffs.reduce((a,b)=>a+b,0)/diffs.length; avg = (meanMs/1000).toFixed(2)+'s'; }
-      const coinsEarned = save.coins - coinsBeforeRound; modalScore.textContent = score; modalCoins.textContent = coinsEarned; modalAvg.textContent = avg; // save highscore
-      try{ const list = loadHighscores(); list.unshift({score,avg,date:new Date().toISOString()}); list.sort((a,b)=>b.score-a.score); saveHighscores(list.slice(0,10)); }catch(e){}
-      persist(); renderHighscores(); showModal(); }
-
-    function spawnLoop(){ clearInterval(spawnTimer); const base = 850; const factor = activePowerups.rapid?0.45:1; const interval = Math.max(180, base*(activePowerups.slow?1.5:1)*factor); spawnTimer = setInterval(()=>spawnTarget(), interval); }
-
-    function spawnTarget(){ if(!running) return; const sizes=['small','medium','large']; const s = sizes[Math.floor(Math.random()*sizes.length)]; const px = sizeMap[s]; const t = document.createElement('div'); // class names
-      const skinClass = save.equipped && save.equipped!=='default' ? ('skin-'+save.equipped) : 'skin-default'; t.className = `target size-${s} ${skinClass}`; t.style.width = px+'px'; t.style.height = px+'px'; // position
-      const areaRect = gameArea.getBoundingClientRect(); const padding = 8; const maxLeft = Math.max(0, areaRect.width - px - padding); const maxTop = Math.max(0, areaRect.height - px - padding); const left = Math.random()*maxLeft + padding; const top = Math.random()*maxTop + padding; t.style.left = left + 'px'; t.style.top = top + 'px'; t.classList.add('pop'); // events
-      const onHit = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); // points by size
-        let pts=10; if(s==='small') pts=7; if(s==='large') pts=20; if(activePowerups.double) pts*=2; score += pts; scoreEl.textContent = score; hitsTimestamps.push(Date.now()); // coin awarding: 1 coin per 10 points
-        const coinCount = Math.floor(score/10); if(coinCount>lastCoinThreshold){ const delta = coinCount - lastCoinThreshold; save.coins += delta; lastCoinThreshold = coinCount; persist(); }
-        playHit(); vibrate(12); t.remove(); };
-      t.addEventListener('click', onHit); t.addEventListener('touchstart', onHit, {passive:false}); gameArea.appendChild(t); playSpawn(); // auto remove
-      setTimeout(()=>{ if(t.parentNode) t.remove(); }, 1500);
-    }
-
-    // powerups
-    function usePowerup(id){ const item = catalog.find(i=>i.id===id); if(!item) return; if(!save.owned[id]) return alert('You do not own this powerup'); if(!running) return alert('Start a round to use powerups'); if(item.effect==='double'){ activePowerups.double=true; powerupTimeouts.push(setTimeout(()=>{ activePowerups.double=false; }, item.duration*1000)); } if(item.effect==='slow'){ activePowerups.slow=true; spawnLoop(); powerupTimeouts.push(setTimeout(()=>{ activePowerups.slow=false; spawnLoop(); }, item.duration*1000)); } if(item.effect==='rapid'){ activePowerups.rapid=true; spawnLoop(); powerupTimeouts.push(setTimeout(()=>{ activePowerups.rapid=false; spawnLoop(); }, item.duration*1000)); } alert(item.name+' activated for '+item.duration+'s'); }
-
-    // modal controls
-    function showModal(){ endModal.classList.add('active'); }
-    function hideModal(){ endModal.classList.remove('active'); }
-    document.getElementById('modalHome').addEventListener('click', ()=>{ hideModal(); showPanel('home'); setActiveNav(navHome); });
-    document.getElementById('modalPlay').addEventListener('click', ()=>{ hideModal(); startRound(); });
-
-    // init
-    renderHighscores(); updateUI(); // nav bindings already set earlier
-
-    // persist regularly
-    setInterval(()=>persist(),5000);
-
-    // Expose small API
-    window._targetTag = { save, persist, startRound };
-
-    // prompt for audio on first interaction (iOS needs user gesture) — gentle guidance
-    document.addEventListener('touchstart', function initAudio(){ try{ if(!audioCtx) ensureAudio(); document.removeEventListener('touchstart', initAudio); }catch(e){} }, {passive:true});
-  </script>
+    let earned=Math.floor(score/10);
+    coins+=earned;
+    localStorage.setItem('coins',coins);
+    const popup=document.getElementById('endPopup');
+    popup.innerHTML=`<h2>Round Over!</h2><p>Score: ${score}</p><p>Avg Time: ${avgClick}</p><p>Coins Earned: ${earned}</p><button class='btn' onclick='showScreen("home");document.getElementById("endPopup").classList.remove("active")'>OK</button>`;
+    popup.classList.add('active');
+  }
+</script>
 </body>
 </html>
+
