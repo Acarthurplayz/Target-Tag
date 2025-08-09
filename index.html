@@ -1,284 +1,162 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Target Tag</title>
-<style>
-  :root{
-    --bg-1:#fff7e6; --bg-2:#ffd6a5; --game-from:#052235; --game-to:#0a6070; --accent:#ff6b6b; --glass:rgba(255,255,255,0.06);
-    --card: rgba(255,255,255,0.04);
-  }
-  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));-webkit-font-smoothing:antialiased}
-  #app{max-width:420px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative}
-
-  header{display:flex;align-items:center;padding:12px}
-  h1{margin:0;font-size:20px;color:#042a2b}
-  #coinDisplay{margin-left:auto;background:var(--glass);padding:6px 10px;border-radius:10px;font-weight:700;color:#042a2b}
-
-  /* panels are full-screen sections (below nav) */
-  .panel{position:absolute;left:0;right:0;top:0;bottom:72px;padding:14px;display:none;overflow:hidden}
-  .panel.active{display:block}
-  .card{background:var(--card);padding:12px;border-radius:12px;color:#fff}
-
-  /* Home */
-  #home .card{background:transparent;color:#042a2b}
-  .start-btn{display:inline-block;padding:14px 18px;border-radius:12px;background:linear-gradient(180deg,var(--accent),#ff856c);color:#fff;font-weight:800;border:none;font-size:16px}
-
-  /* Game */
-  #game{background:linear-gradient(180deg,var(--game-from),var(--game-to));border-radius:12px}
-  #gameArea{position:relative;width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent}
-  .hud{position:absolute;left:12px;top:12px;z-index:80;display:flex;gap:8px}
-  .stat{background:rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:#fff;font-weight:700}
-
-  /* targets */
-  .target{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:70;box-shadow:0 10px 30px rgba(0,0,0,0.5);touch-action:none;background-size:cover;background-position:center}
-  .size-small{width:48px;height:48px}
-  .size-medium{width:72px;height:72px}
-  .size-large{width:96px;height:96px}
-  .pop{animation:pop 180ms cubic-bezier(.2,.8,.2,1)}
-  @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
-
-  /* SVG data URIs (crisp) */
-  :root{
-    --red: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%23fff"/><circle cx="50" cy="50" r="42" fill="%23e3342f"/><circle cx="50" cy="50" r="30" fill="%23fff"/><circle cx="50" cy="50" r="20" fill="%23e3342f"/><circle cx="50" cy="50" r="10" fill="%23fff"/></svg>');
-    --gold: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%23fff"/><circle cx="50" cy="50" r="42" fill="%23ffd65a"/><circle cx="50" cy="50" r="30" fill="%23fff"/><circle cx="50" cy="50" r="20" fill="%23ffd65a"/><circle cx="50" cy="50" r="10" fill="%23fff"/></svg>');
-    --blue: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%23fff"/><circle cx="50" cy="50" r="42" fill="%2360a5fa"/><circle cx="50" cy="50" r="30" fill="%23fff"/><circle cx="50" cy="50" r="20" fill="%2360a5fa"/><circle cx="50" cy="50" r="10" fill="%23fff"/></svg>');
-    --silver: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%23fff"/><circle cx="50" cy="50" r="42" fill="%23e6eef8"/><circle cx="50" cy="50" r="30" fill="%23fff"/><circle cx="50" cy="50" r="20" fill="%23e6eef8"/><circle cx="50" cy="50" r="10" fill="%23fff"/></svg>');
-    --bronze: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="%23fff"/><circle cx="50" cy="50" r="42" fill="%23c77b3a"/><circle cx="50" cy="50" r="30" fill="%23fff"/><circle cx="50" cy="50" r="20" fill="%23c77b3a"/><circle cx="50" cy="50" r="10" fill="%23fff"/></svg>');
-  }
-
-  .skin-default{background-image:var(--red)}
-  .skin-gold{background-image:var(--gold)}
-  .skin-blue{background-image:var(--blue)}
-  .skin-silver{background-image:var(--silver)}
-  .skin-bronze{background-image:var(--bronze)}
-
-  /* Bottom nav */
-  nav{position:fixed;left:0;right:0;bottom:0;height:72px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));display:flex;align-items:center;justify-content:space-around}
-  .nav-btn{flex:1;text-align:center;padding:8px;color:#042a2b;border:none;background:transparent;font-weight:800}
-  .nav-btn.active{background:rgba(255,255,255,0.03)}
-
-  /* shop list */
-  .items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
-  .item{background:rgba(255,255,255,0.03);padding:10px;border-radius:10px;color:#fff;display:flex;flex-direction:column;align-items:center}
-  .preview{width:64px;height:64px;border-radius:12px;margin-bottom:8px;background-size:cover}
-
-  /* buy button (shows price) */
-  .buy-btn{background:linear-gradient(180deg,#00c6ff,#0072ff);color:white;border:none;padding:8px 10px;border-radius:8px;font-weight:800}
-  .owned-btn{background:rgba(255,255,255,0.06);color:#e0e0e0;border:none;padding:8px 10px;border-radius:8px}
-
-  /* modal */
-  .modal{position:fixed;left:12px;right:12px;top:22vh;background:rgba(0,0,0,0.6);padding:16px;border-radius:12px;color:#fff;display:none;z-index:200}
-  .modal.active{display:block}
-  .modal .row{display:flex;justify-content:space-between;margin-top:8px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Target Tag</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(180deg, #ff7e5f, #feb47b);
+      --panel-bg: rgba(255, 255, 255, 0.15);
+      --accent: #ff3e3e;
+      --text-color: #fff;
+      --shop-bg: #1e293b;
+      --shop-text: #f8fafc;
+    }
+    * { box-sizing: border-box; font-family: Inter, sans-serif; }
+    html, body, #app { height: 100%; margin: 0; background: var(--bg-gradient); color: var(--text-color); }
+    .container { max-width: 420px; margin: 0 auto; padding: 16px; }
+    header { display: flex; align-items: center; justify-content: space-between; }
+    h1 { font-size: 28px; margin: 0; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+    .panel { background: var(--panel-bg); border-radius: 12px; padding: 12px; margin-top: 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    button { background: var(--accent); border: none; color: white; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+    button:hover { opacity: 0.9; }
+    button.ghost { background: transparent; border: 2px solid white; }
+    #gameArea { position: relative; height: 520px; border-radius: 12px; overflow: hidden; background: #082f49; margin-top: 12px; }
+    .hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 10px; align-items: center; }
+    .hud .stat { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-weight: 600; }
+    .target { position: absolute; border-radius: 50%; background: radial-gradient(circle, white 20%, red 20% 40%, white 40% 60%, red 60%); cursor: pointer; }
+    .target.small { width: 48px; height: 48px; }
+    .target.medium { width: 72px; height: 72px; }
+    .target.large { width: 96px; height: 96px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    #shopScreen { background: var(--shop-bg); color: var(--shop-text); padding: 16px; height: 520px; overflow-y: auto; border-radius: 12px; }
+    .shop-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 12px; }
+    .shop-item h3 { margin: 0; }
+    .shop-item p { font-size: 14px; margin: 4px 0; }
+    .flash { animation: flashEffect 0.5s ease; }
+    @keyframes flashEffect { from { background: yellow; } to { background: transparent; } }
+  </style>
 </head>
 <body>
-  <div id="app">
+  <div class="container" id="app">
     <header>
-      <h1>Target Tag</h1>
+      <h1>🎯 Target Tag</h1>
       <div id="coinDisplay">Coins: 0</div>
     </header>
 
-    <!-- HOME -->
-    <section id="home" class="panel active">
-      <div class="card" style="background:transparent;color:#042a2b">
-        <h2>Tap targets. Earn coins. Buy skins & powerups.</h2>
-        <div style="margin-top:12px;text-align:center">
-          <button id="startBtn" class="start-btn">Start Round</button>
-        </div>
-        <div style="margin-top:12px;color:#042a2b">Round length:
-          <select id="roundLen">
-            <option value="20">20s</option>
-            <option value="30" selected>30s</option>
-            <option value="60">60s</option>
-          </select>
-        </div>
-        <div id="highScores" style="margin-top:12px;color:#042a2b"></div>
+    <div class="panel screen active" id="title">
+      <h2>Tap the targets as fast as you can!</h2>
+      <p>Earn 1 coin per 10 points. Buy skins and powerups in the shop.</p>
+      <div class="row">
+        <button id="playBtn">Play</button>
+        <button class="ghost" id="shopBtn">Shop</button>
+        <button class="ghost" id="lockerBtn">Locker</button>
       </div>
-    </section>
+      <label>Round length:</label>
+      <select id="roundLen">
+        <option value="20">20s</option>
+        <option value="30" selected>30s</option>
+        <option value="60">60s</option>
+      </select>
+    </div>
 
-    <!-- GAME -->
-    <section id="game" class="panel">
-      <div id="gameArea"></div>
-      <div class="hud" id="hud">
+    <div id="shopScreen" class="screen"></div>
+
+    <div id="gameArea" class="screen">
+      <div class="hud">
         <div class="stat">Score: <span id="score">0</span></div>
         <div class="stat">Time: <span id="time">0</span></div>
-        <div class="stat">Equipped: <span id="equipped">Default</span></div>
-      </div>
-    </section>
-
-    <!-- SHOP -->
-    <section id="shop" class="panel">
-      <div class="card">
-        <h3 style="color:#fff">Shop</h3>
-        <div class="items" id="shopItems"></div>
-      </div>
-    </section>
-
-    <!-- LOCKER -->
-    <section id="locker" class="panel">
-      <div class="card">
-        <h3 style="color:#fff">Locker</h3>
-        <div class="items" id="lockerItems"></div>
-      </div>
-    </section>
-
-    <!-- purchase confirm modal -->
-    <div id="confirmModal" class="modal" role="dialog" aria-modal="true">
-      <div id="confirmText">Buy item?</div>
-      <div class="row" style="margin-top:12px">
-        <button id="confirmNo" class="buy-btn">Cancel</button>
-        <button id="confirmYes" class="buy-btn">Buy</button>
       </div>
     </div>
-
-    <!-- end modal -->
-    <div id="endModal" class="modal">
-      <h3>Round Results</h3>
-      <div>Score: <strong id="modalScore">0</strong></div>
-      <div>Coins earned: <strong id="modalCoins">0</strong></div>
-      <div>Avg time between taps: <strong id="modalAvg">—</strong></div>
-      <div class="row" style="margin-top:12px">
-        <button id="modalHome" class="buy-btn">Home</button>
-        <button id="modalPlay" class="buy-btn">Play Again</button>
-      </div>
-    </div>
-
-    <nav>
-      <button class="nav-btn active" data-target="home">Home</button>
-      <button class="nav-btn" data-target="shop">Shop</button>
-      <button class="nav-btn" data-target="locker">Locker</button>
-    </nav>
   </div>
 
-<script>
-// ---------- Storage ----------
-const SAVE_KEY = 'target-tag-v6';
-const HS_KEY = 'target-tag-hs-v2';
-const defaultSave = { coins:0, owned:{ default:true }, equipped:'default' };
-let save = loadSave();
-function loadSave(){ try{ const raw = localStorage.getItem(SAVE_KEY); return raw? JSON.parse(raw): {...defaultSave}; }catch(e){ return {...defaultSave}; }}
-function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); updateUI(); }
+  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <audio id="frenzySound" src="https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg"></audio>
 
-function loadHS(){ try{ const raw = localStorage.getItem(HS_KEY); return raw? JSON.parse(raw): []; }catch(e){ return []; }}
-function saveHS(list){ localStorage.setItem(HS_KEY, JSON.stringify(list)); }
+  <script>
+    let coins = 0, score = 0, timeLeft = 0, running = false, spawnTimer, tickTimer, frenzyActive = false;
+    const coinDisplay = document.getElementById('coinDisplay');
+    const scoreEl = document.getElementById('score');
+    const timeEl = document.getElementById('time');
+    const clickSound = document.getElementById('clickSound');
+    const frenzySound = document.getElementById('frenzySound');
 
-// ---------- DOM refs ----------
-const panels = { home:document.getElementById('home'), game:document.getElementById('game'), shop:document.getElementById('shop'), locker:document.getElementById('locker') };
-const navBtns = document.querySelectorAll('.nav-btn');
-const coinDisplay = document.getElementById('coinDisplay');
-const scoreEl = document.getElementById('score');
-const timeEl = document.getElementById('time');
-const equippedEl = document.getElementById('equipped');
-const gameArea = document.getElementById('gameArea');
-const shopItemsEl = document.getElementById('shopItems');
-const lockerItemsEl = document.getElementById('lockerItems');
-const highScoresEl = document.getElementById('highScores');
-const confirmModal = document.getElementById('confirmModal');
-const confirmText = document.getElementById('confirmText');
-const confirmYes = document.getElementById('confirmYes');
-const confirmNo = document.getElementById('confirmNo');
-const endModal = document.getElementById('endModal');
-const modalScore = document.getElementById('modalScore');
-const modalCoins = document.getElementById('modalCoins');
-const modalAvg = document.getElementById('modalAvg');
+    const shopItems = [
+      { name: 'Common Target Skin', price: 500, desc: 'Basic colour change.' },
+      { name: 'Rare Target Skin', price: 2000, desc: 'Shiny blue target.' },
+      { name: 'Legendary Target Skin', price: 5000, desc: 'Gold target with permanent 2x coins & score.' },
+      { name: 'Extra Time +10s', price: 300, desc: 'Adds 10s to your round.' },
+      { name: 'Score Booster x2 (1 round)', price: 300, desc: 'Doubles score for one round.' },
+      { name: 'Coin Frenzy', price: 350, desc: 'Double coins for 20s (once per round).' }
+    ];
 
-// ---------- Catalog & prices (rebalanced) ----------
-const catalog = [
-  {id:'blue',type:'skin',name:'Blue Target',price:500,cls:'skin-blue'},
-  {id:'silver',type:'skin',name:'Silver Target',price:1000,cls:'skin-silver'},
-  {id:'bronze',type:'skin',name:'Bronze Target',price:2000,cls:'skin-bronze'},
-  {id:'gold',type:'skin',name:'Gold Target',price:3500,cls:'skin-gold'},
-  {id:'legend',type:'skin',name:'Legendary Target',price:5000,cls:'skin-gold'},
-  {id:'double',type:'power',name:'Double Points (30s)',price:750,effect:'double',duration:30},
-  {id:'slow',type:'power',name:'Slow Spawn (30s)',price:1200,effect:'slow',duration:30},
-  {id:'rapid',type:'power',name:'Rapid Spawn (15s)',price:900,effect:'rapid',duration:15}
-];
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
 
-// ---------- Audio ----------
-const AudioCtx = window.AudioContext || window.webkitAudioContext; let audioCtx = null;
-function ensureAudio(){ if(!audioCtx) audioCtx = new AudioCtx(); }
-function playTone(freq,dur=110,type='sine',vol=0.04){ try{ ensureAudio(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(audioCtx.destination); o.start(); o.frequency.exponentialRampToValueAtTime(freq*0.6, audioCtx.currentTime+dur/1000); setTimeout(()=>o.stop(), dur); }catch(e){} }
-function playHit(){ playTone(880,100,'sine',0.06); }
-function playSpawn(){ playTone(520,80,'triangle',0.03); }
-function playBuy(){ playTone(660,140,'sawtooth',0.05); }
-function playEquip(){ playTone(1000,140,'sine',0.05); }
+    function loadShop() {
+      const shopEl = document.getElementById('shopScreen');
+      shopEl.innerHTML = '<h2>Item Shop</h2>';
+      shopItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'shop-item';
+        div.innerHTML = `<h3>${item.name}</h3><p>${item.desc}</p><button>Buy - ${item.price} coins</button>`;
+        shopEl.appendChild(div);
+      });
+    }
 
-function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+    function startRound() {
+      score = 0; frenzyActive = false;
+      scoreEl.textContent = score;
+      timeLeft = parseInt(document.getElementById('roundLen').value);
+      timeEl.textContent = timeLeft;
+      running = true;
+      showScreen('gameArea');
+      spawnTargets();
+      tickTimer = setInterval(() => {
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) endRound();
+      }, 1000);
+    }
 
-// ---------- Game state ----------
-let running=false, score=0, timeLeft=0, spawnTimer=null, tickTimer=null, lastCoinThreshold=0, hitsTimestamps=[], coinsBeforeRound=0, activePowerups={double:false,slow:false,rapid:false}, powerupTimeouts=[];
-const sizeMap = { small:48, medium:72, large:96 };
-let pendingPurchase = null; // for confirm modal
+    function spawnTargets() {
+      spawnTimer = setInterval(() => {
+        if (!running) return;
+        const t = document.createElement('div');
+        t.className = 'target medium';
+        t.style.left = Math.random() * (gameArea.clientWidth - 72) + 'px';
+        t.style.top = Math.random() * (gameArea.clientHeight - 72) + 'px';
+        t.onclick = () => {
+          clickSound.play();
+          let pts = 10;
+          if (frenzyActive) pts *= 2;
+          score += pts;
+          scoreEl.textContent = score;
+          t.remove();
+        };
+        gameArea.appendChild(t);
+        setTimeout(() => t.remove(), 1500);
+      }, 800);
+    }
 
-// ---------- UI functions ----------
-function show(panel){ Object.keys(panels).forEach(k=>panels[k].classList.remove('active')); panels[panel].classList.add('active'); navBtns.forEach(b=>b.classList.remove('active')); document.querySelector(`.nav-btn[data-target="${panel}"]`).classList.add('active'); }
-navBtns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.target)));
+    function endRound() {
+      running = false;
+      clearInterval(spawnTimer);
+      clearInterval(tickTimer);
+      coins += Math.floor(score / 10);
+      coinDisplay.textContent = 'Coins: ' + coins;
+      alert(`Round over!\nScore: ${score}\nCoins Earned: ${Math.floor(score / 10)}`);
+      showScreen('title');
+    }
 
-function updateUI(){ coinDisplay.textContent = 'Coins: '+save.coins; scoreEl.textContent = score; timeEl.textContent = timeLeft; equippedEl.textContent = save.equipped==='default'?'Default':(catalog.find(c=>c.id===save.equipped)?.name||save.equipped); buildShop(); buildLocker(); renderHS(); }
-
-// ---------- Shop & Locker ----------
-function buildShop(){ shopItemsEl.innerHTML=''; catalog.forEach(item=>{ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; if(item.type==='skin'){ preview.style.backgroundImage = `var(--${item.cls.split('-')[1]})`; const p=document.createElement('div'); p.className = `target size-medium ${item.cls}`; p.style.width='56px'; p.style.height='56px'; preview.appendChild(p);} else { preview.textContent = item.name; } const title=document.createElement('div'); title.textContent = item.name; const btn=document.createElement('button'); if(save.owned[item.id]){ btn.textContent='Owned'; btn.className='owned-btn'; btn.disabled=true; } else { btn.textContent = `Buy ${item.price}`; btn.className='buy-btn'; btn.addEventListener('click', ()=>confirmBuy(item)); } div.appendChild(preview); div.appendChild(title); div.appendChild(btn); shopItemsEl.appendChild(div); }); }
-
-function buildLocker(){ lockerItemsEl.innerHTML=''; // skins
- catalog.filter(i=>i.type==='skin').forEach(item=>{ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; const p=document.createElement('div'); p.className=`target size-medium ${item.cls}`; p.style.width='56px'; p.style.height='56px'; preview.appendChild(p); const title=document.createElement('div'); title.textContent=item.name; const btn=document.createElement('button'); if(save.owned[item.id]){ btn.textContent = save.equipped===item.id? 'Equipped' : `Equip ${item.price}`; btn.disabled = save.equipped===item.id; btn.className = save.equipped===item.id? 'owned-btn': 'buy-btn'; btn.addEventListener('click', ()=>{ save.equipped = item.id; persist(); playEquip(); }); } else { btn.textContent='Locked'; btn.disabled=true; btn.className='owned-btn'; } div.appendChild(preview); div.appendChild(title); div.appendChild(btn); lockerItemsEl.appendChild(div); });
- // powerups
- catalog.filter(i=>i.type==='power').forEach(item=>{ const div=document.createElement('div'); div.className='item'; const preview=document.createElement('div'); preview.className='preview'; preview.textContent=item.name; const title=document.createElement('div'); title.textContent = item.name + ' — ' + item.duration + 's'; const btn=document.createElement('button'); if(save.owned[item.id]){ btn.textContent='Use'; btn.className='buy-btn'; btn.addEventListener('click', ()=>usePowerup(item.id)); } else { btn.textContent = `Buy ${item.price}`; btn.className='buy-btn'; btn.addEventListener('click', ()=>confirmBuy(item)); } div.appendChild(preview); div.appendChild(title); div.appendChild(btn); lockerItemsEl.appendChild(div); }); }
-
-function confirmBuy(item){ pendingPurchase = item; confirmText.textContent = `Buy ${item.name} for ${item.price} coins?`; confirmModal.classList.add('active'); }
-confirmNo.addEventListener('click', ()=>{ pendingPurchase = null; confirmModal.classList.remove('active'); });
-confirmYes.addEventListener('click', ()=>{ if(!pendingPurchase) return; const item = pendingPurchase; pendingPurchase = null; confirmModal.classList.remove('active'); if(save.coins < item.price){ alert('Not enough coins'); return; } save.coins -= item.price; save.owned[item.id] = true; persist(); playBuy(); alert('Purchased: '+item.name); });
-
-// ---------- Highscores ----------
-function renderHS(){ const list = loadHS(); highScoresEl.innerHTML=''; if(list.length===0){ highScoresEl.textContent='No highscores yet — play to record one!'; return; } list.slice(0,5).forEach((r,idx)=>{ const d=document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.padding='6px 0'; d.innerHTML = `<div>#${idx+1} ${r.score}</div><div style="opacity:0.9">${r.avg}</div>`; highScoresEl.appendChild(d); }); }
-
-// ---------- Gameplay ----------
-function startRound(){ clearRound(); coinsBeforeRound = save.coins; lastCoinThreshold = Math.floor(0/10); hitsTimestamps=[]; activePowerups={double:false,slow:false,rapid:false}; score=0; timeLeft = parseInt(document.getElementById('roundLen').value,10); updateUI(); running=true; spawnLoop(); tickTimer = setInterval(()=>{ timeLeft--; updateUI(); if(timeLeft<=0) endRound(); },1000); show('game'); }
-function clearRound(){ running=false; clearInterval(spawnTimer); clearInterval(tickTimer); powerupTimeouts.forEach(t=>clearTimeout(t)); powerupTimeouts=[]; document.querySelectorAll('.target').forEach(t=>t.remove()); }
-function endRound(){ running=false; clearInterval(spawnTimer); clearInterval(tickTimer); let avg='—'; if(hitsTimestamps.length>=2){ const diffs=[]; for(let i=1;i<hitsTimestamps.length;i++) diffs.push(hitsTimestamps[i]-hitsTimestamps[i-1]); const meanMs = diffs.reduce((a,b)=>a+b,0)/diffs.length; avg=(meanMs/1000).toFixed(2)+'s'; } const coinsEarned = save.coins - coinsBeforeRound; modalScore.textContent = score; modalCoins.textContent = coinsEarned; modalAvg.textContent = avg; // save HS
- try{ const list = loadHS(); list.unshift({score,avg,date:new Date().toISOString()}); list.sort((a,b)=>b.score-a.score); saveHS(list.slice(0,10)); }catch(e){} persist(); renderHS(); showModal(); }
-
-function spawnLoop(){ clearInterval(spawnTimer); const base = 900; const factor = activePowerups.rapid?0.45:1; const interval = Math.max(180, base*(activePowerups.slow?1.5:1)*factor); spawnTimer = setInterval(()=>spawnTarget(), interval); }
-
-function spawnTarget(){ if(!running) return; const sizes=['small','medium','large']; const s = sizes[Math.floor(Math.random()*sizes.length)]; const px = sizeMap[s]; const t = document.createElement('div'); const skin = save.equipped && save.equipped!=='default' ? ('skin-'+save.equipped) : 'skin-default'; t.className = `target size-${s} ${skin}`; t.style.width = px+'px'; t.style.height = px+'px'; const rect = gameArea.getBoundingClientRect(); const padding = 8; const maxLeft = Math.max(0, rect.width - px - padding); const maxTop = Math.max(0, rect.height - px - padding); const left = Math.random()*maxLeft + padding; const top = Math.random()*maxTop + padding; t.style.left = left + 'px'; t.style.top = top + 'px'; t.classList.add('pop'); const onHit = (ev)=>{ ev.preventDefault(); ev.stopPropagation(); let pts=10; if(s==='small') pts=7; if(s==='large') pts=20; if(activePowerups.double) pts*=2; score += pts; scoreEl.textContent = score; hitsTimestamps.push(Date.now()); const coinCount = Math.floor(score/10); if(coinCount>lastCoinThreshold){ const delta = coinCount - lastCoinThreshold; save.coins += delta; lastCoinThreshold = coinCount; persist(); } playHit(); vibrate(12); t.remove(); }; t.addEventListener('touchstart', onHit, {passive:false}); t.addEventListener('click', onHit); gameArea.appendChild(t); playSpawn(); setTimeout(()=>{ if(t.parentNode) t.remove(); }, 1500); }
-
-// ---------- Powerups ----------
-function usePowerup(id){ const item = catalog.find(i=>i.id===id); if(!item) return; if(!save.owned[id]) return alert('You do not own this powerup'); if(!running) return alert('Start a round to use powerups'); if(item.effect==='double'){ activePowerups.double=true; powerupTimeouts.push(setTimeout(()=>{ activePowerups.double=false; }, item.duration*1000)); } if(item.effect==='slow'){ activePowerups.slow=true; spawnLoop(); powerupTimeouts.push(setTimeout(()=>{ activePowerups.slow=false; spawnLoop(); }, item.duration*1000)); } if(item.effect==='rapid'){ activePowerups.rapid=true; spawnLoop(); powerupTimeouts.push(setTimeout(()=>{ activePowerups.rapid=false; spawnLoop(); }, item.duration*1000)); } alert(item.name + ' activated for ' + item.duration + 's'); }
-
-// ---------- Modal controls ----------
-function showModal(){ endModal.classList.add('active'); }
-function hideModal(){ endModal.classList.remove('active'); }
-document.getElementById('modalHome').addEventListener('click', ()=>{ hideModal(); show('home'); });
-document.getElementById('modalPlay').addEventListener('click', ()=>{ hideModal(); startRound(); });
-
-// ---------- Init & bindings ----------
-document.getElementById('startBtn').addEventListener('click', ()=>{ startRound(); });
-confirmNo.addEventListener('click', ()=>{ pendingPurchase=null; confirmModal.classList.remove('active'); });
-
-confirmYes.addEventListener('click', ()=>{
-  if(!pendingPurchase) return; const item = pendingPurchase; pendingPurchase=null; confirmModal.classList.remove('active'); if(save.coins < item.price){ alert('Not enough coins'); return; } save.coins -= item.price; save.owned[item.id] = true; persist(); playBuy(); alert('Purchased: '+item.name); });
-
-function showConfirm(item){ pendingPurchase=item; confirmText.textContent = `Buy ${item.name} for ${item.price} coins?`; confirmModal.classList.add('active'); }
-
-// helper exposed for backwards compat
-function confirmBuy(item){ showConfirm(item); }
-
-// initial UI build
-function init(){ if(!save) save = {...defaultSave}; updateUI(); show('home'); }
-init();
-
-// audio warm-up on first touch
-document.addEventListener('touchstart', function initAudio(){ try{ if(!audioCtx) ensureAudio(); document.removeEventListener('touchstart', initAudio); }catch(e){} }, {passive:true});
-
-// persist periodically
-setInterval(()=>persist(),5000);
-
-// expose debug
-window._targetTag = { save, persist, startRound };
-</script>
+    document.getElementById('playBtn').onclick = startRound;
+    document.getElementById('shopBtn').onclick = () => { loadShop(); showScreen('shopScreen'); };
+  </script>
 </body>
 </html>
 
