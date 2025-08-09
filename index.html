@@ -2,104 +2,973 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Target Tag</title>
 <style>
-  /* Vibrant background and mobile-friendly layout */
-  html, body, #app {
-    height: 100%;
-    margin: 0;
-    background: linear-gradient(180deg, #ff7f50, #ff1493);
-    font-family: Arial, sans-serif;
-    color: white;
+  :root{
+    --bg1:#ff7a59;
+    --bg2:#ffd166;
+    --panel: rgba(255,255,255,0.06);
+    --card:#ffffff10;
+    --accent:#06d6a0;
+    --muted:#ffffffaa;
+    --nav:#0b1020cc;
+    --btn-grad: linear-gradient(90deg,#ff9a9e,#fad0c4);
+    --safe-max-width:420px;
   }
-  .screen { display: none; height: 100%; }
-  .screen.active { display: block; }
-  header { padding: 10px; text-align: center; font-size: 24px; font-weight: bold; }
-  #bottomNav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  html,body{
+    height:100%;
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+  #app{
+    width:100%;
+    max-width:var(--safe-max-width);
+    height:100vh;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+    border-left: 1px solid rgba(255,255,255,0.04);
+    border-right:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+
+  /* Top header */
+  header.app-header{
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    justify-content:space-between;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    backdrop-filter: blur(6px);
+  }
+  header.app-header h1{
+    margin:0;
+    font-size:18px;
+    letter-spacing:0.3px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .coin-pill{
+    background:rgba(0,0,0,0.2);
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:700;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  /* screens */
+  .screen{
+    flex:1;
+    display:none;
+    padding:12px;
+    box-sizing:border-box;
+    position:relative;
+  }
+  .screen.active{ display:block; }
+
+  /* Home */
+  .home-panel{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:center;
+    justify-content:flex-start;
+  }
+  .title-graphic{
+    width:120px;
+    height:120px;
+    border-radius:28px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(0,0,0,0.08));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    margin-top:8px;
+  }
+  .title-graphic svg{ width:82px; height:82px; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3)); }
+
+  .desc { text-align:center; color:var(--muted); font-size:14px; padding:0 8px;}
+  .big-btn{
+    width:86%;
+    padding:14px 16px;
+    border-radius:12px;
+    border:none;
+    font-weight:800;
+    font-size:16px;
+    color:#052027;
+    cursor:pointer;
+    background: linear-gradient(90deg,#ffd166,#06d6a0);
+    box-shadow: 0 8px 18px rgba(6,214,160,0.16);
+  }
+  .row-small{ display:flex; gap:10px; width:86%; justify-content:space-between; }
+
+  /* Game area */
+  #gameArea{
+    position:relative;
+    width:100%;
+    height: calc(100vh - 160px); /* header + nav bars spacing */
+    min-height:320px;
+    border-radius:14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.04));
+    overflow:hidden;
+    touch-action:none;
+  }
+  .hud{
+    position:absolute;
+    left:12px;
+    top:12px;
+    display:flex;
+    gap:8px;
+    z-index:50;
+  }
+  .hud .stat{
+    background: rgba(0,0,0,0.35);
+    padding:8px 10px;
+    border-radius:10px;
+    font-weight:700;
+    backdrop-filter: blur(6px);
+  }
+
+  /* target style - using inline SVG background */
+  .target{
+    position:absolute;
+    width:72px;
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    touch-action:none;
+    user-select:none;
+    border-radius:999px;
+    box-shadow: 0 10px 18px rgba(0,0,0,0.35);
+    transform-origin:center;
+    transition: transform 120ms ease, opacity 220ms ease;
+  }
+  .target:active{ transform: scale(0.95); }
+
+  /* small visual helpers */
+  .btn{
+    padding:8px 10px;
+    border-radius:10px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .ghost{ background:transparent; border:2px solid rgba(255,255,255,0.12); color:#fff; }
+  .card{
+    background:var(--card);
+    padding:10px;
+    border-radius:12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  /* bottom nav */
+  nav.bottom-nav{
+    height:60px;
+    background:var(--nav);
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    gap:6px;
+    padding:8px 6px;
+  }
+  nav .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    justify-content:center;
+    color:#ddd;
+    font-weight:700;
+    font-size:12px;
+  }
+  nav .nav-item.active{ color: #fff; }
+
+  /* Shop list */
+  .shop-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding-bottom:40px;
+    overflow:auto;
+    max-height: calc(100vh - 220px);
+    padding-right:8px;
+  }
+  .shop-item{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px;
+    border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .shop-left{ display:flex; gap:12px; align-items:center; }
+  .shop-preview{ width:64px; height:64px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .shop-info{ font-size:13px; color:var(--muted); max-width:160px; }
+  .buy-btn{ padding:8px 10px; border-radius:10px; font-weight:800; background:linear-gradient(90deg,#ffd166,#ff7a59); color:#052027; border:none; cursor:pointer; }
+
+  /* locker */
+  .locker-grid{ display:flex; gap:8px; flex-wrap:wrap; }
+
+  /* modal */
+  .modal-backdrop{
+    position:fixed;
+    left:0; top:0; right:0; bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
+    z-index:200;
   }
-  #bottomNav button {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
+  .modal{
+    width:86%;
+    background:linear-gradient(180deg,#ffffff11,#00000007);
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.4);
+    color:#fff;
   }
-  button { cursor: pointer; }
-  .shopItem {
-    background: rgba(255,255,255,0.15);
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px 0;
+  .modal h3{ margin:0 0 8px 0; }
+  .modal .muted{ color:var(--muted); font-size:13px; }
+
+  /* end modal styles */
+  .end-stats{ display:flex; gap:12px; flex-direction:column; }
+
+  /* responsive tweaks */
+  @media (min-width:420px){
+    #gameArea{ height: calc(100vh - 170px); }
   }
-  .shopItem h3 { margin: 0; }
-  .shopItem p { font-size: 14px; margin: 5px 0; }
-  .backBtn {
-    margin-top: 10px;
-    background: #ff3e3e;
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: none;
-    color: white;
-    font-size: 14px;
-  }
+
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="screen active" id="titleScreen">
-    <header>🎯 Target Tag</header>
-    <div style="text-align:center;margin-top:20px;">
-      <button onclick="startGame()" style="padding:10px 20px;">Play</button>
-    </div>
-    <div id="bottomNav">
-      <button onclick="showScreen('shopScreen')">Shop</button>
-      <button onclick="showScreen('lockerScreen')">Locker</button>
-    </div>
+  <div id="app">
+    <header class="app-header">
+      <h1>🎯 Target Tag</h1>
+      <div class="coin-pill card" id="coinDisplay">Coins: 0</div>
+    </header>
+
+    <!-- HOME -->
+    <section class="screen active" id="homeScreen">
+      <div class="home-panel" style="margin-top:4px">
+        <div class="title-graphic card" aria-hidden="true">
+          <!-- simple target svg -->
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="g1">
+                <stop offset="0%" stop-color="#fff"/>
+                <stop offset="35%" stop-color="#06d6a0"/>
+                <stop offset="65%" stop-color="#06b38a"/>
+                <stop offset="100%" stop-color="#077a5a"/>
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="url(#g1)"/>
+            <circle cx="50" cy="50" r="26" fill="#fff"/>
+            <circle cx="50" cy="50" r="12" fill="#06d6a0"/>
+          </svg>
+        </div>
+
+        <div style="width:90%; text-align:center;">
+          <h2 style="margin:6px 0 4px 0">Tap targets. Earn coins. Buy skins & powerups.</h2>
+          <div class="desc">1 coin per 10 points. Legendary skin gives permanent 2× coins & 2× score multiplier. Grind & customize!</div>
+        </div>
+
+        <div style="flex:1; display:flex; align-items:flex-end; gap:12px; flex-direction:column; width:100%; padding-bottom:18px;">
+          <button id="playBtn" class="big-btn">Play</button>
+          <div class="row-small" style="justify-content:center; width:100%;">
+            <button id="homeShopBtn" class="btn ghost card">Shop</button>
+            <button id="homeLockerBtn" class="btn ghost card">Locker</button>
+            <div style="flex:1"></div>
+          </div>
+        </div>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen" id="gameScreen">
+      <div id="gameArea" class="card">
+        <div class="hud">
+          <div class="stat">Score: <span id="score">0</span></div>
+          <div class="stat">Time: <span id="timeLeft">0</span></div>
+          <div class="stat">Coins: <span id="sessionCoins">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOP -->
+    <section class="screen" id="shopScreen">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <button id="shopBack" class="btn ghost">Back</button>
+        <div style="font-weight:900">Shop</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="shop-list card" id="shopList" role="list">
+        <!-- items inserted by JS -->
+      </div>
+    </section>
+
+    <!-- LOCKER -->
+    <section class="screen" id="lockerScreen">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <button id="lockerBack" class="btn ghost">Back</button>
+        <div style="font-weight:900">Locker</div>
+        <div style="width:56px"></div>
+      </div>
+      <div class="card" style="padding:12px; margin-bottom:8px;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div id="previewLarge" style="width:96px; height:96px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:#00000022;"></div>
+          <div style="flex:1">
+            <div style="font-weight:800" id="previewName">No skin equipped</div>
+            <div class="muted" id="previewDesc">Equip skins to change target look and unlock perks.</div>
+          </div>
+          <button id="unequipBtn" class="btn ghost">Unequip</button>
+        </div>
+      </div>
+      <div style="padding:8px;">
+        <div style="font-weight:800; margin-bottom:8px">Owned Skins</div>
+        <div id="ownedSkins" class="locker-grid"></div>
+
+        <div style="font-weight:800; margin-top:12px; margin-bottom:8px">Owned Powerups</div>
+        <div id="ownedPowerups" class="locker-grid"></div>
+      </div>
+    </section>
+
+    <!-- bottom nav -->
+    <nav class="bottom-nav">
+      <div class="nav-item" id="navHome"><div>Home</div></div>
+      <div class="nav-item" id="navShop"><div>Shop</div></div>
+      <div class="nav-item" id="navLocker"><div>Locker</div></div>
+      <div class="nav-item" id="navGame"><div>Play</div></div>
+    </nav>
   </div>
 
-  <div class="screen" id="shopScreen">
-    <header>Item Shop</header>
-    <div class="shopItem">
-      <h3>Common Skin</h3>
-      <p>Bright blue with white bullseye.</p>
-      <button>Buy - 100 Coins</button>
-    </div>
-    <div class="shopItem">
-      <h3>Legendary Skin</h3>
-      <p>Gold target with permanent 2× coins & score.</p>
-      <button>Buy - 5000 Coins</button>
-    </div>
-    <div class="shopItem">
-      <h3>Coin Frenzy</h3>
-      <p>Double coins for 20s (once per round).</p>
-      <button>Buy - 500 Coins</button>
-    </div>
-    <button class="backBtn" onclick="showScreen('titleScreen')">Back</button>
-  </div>
+  <!-- modals -->
+  <div id="modalRoot" style="display:none;"></div>
 
-  <div class="screen" id="lockerScreen">
-    <header>Locker</header>
-    <p>Preview your unlocked skins and select one.</p>
-    <button class="backBtn" onclick="showScreen('titleScreen')">Back</button>
-  </div>
-</div>
 <script>
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+/* ============
+  FULL GAME CODE
+   - Single-file final build
+   - Copy / Paste into index.html
+   ============ */
+
+/* ---------- Utilities ---------- */
+const $ = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function createEl(tag, cls=''){ const e = document.createElement(tag); if(cls) e.className = cls; return e; }
+
+/* ---------- Persistent state ---------- */
+const STORAGE_KEY = 'target-tag-v2';
+let state = {
+  coins: 0,
+  ownedSkins: ['default'], // default skin id
+  ownedPowerups: {}, // id -> count
+  equippedSkin: 'default',
+  equippedPowerups: [], // quick-access (not used here)
+  highscores: [],
+};
+function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) Object.assign(state, JSON.parse(raw)); }catch(e){ console.error(e); } }
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+loadState();
+
+/* ---------- DOM refs ---------- */
+const screens = {
+  home: $('#homeScreen'),
+  game: $('#gameScreen'),
+  shop: $('#shopScreen'),
+  locker: $('#lockerScreen'),
+};
+const coinDisplay = $('#coinDisplay');
+const scoreEl = $('#score');
+const timeEl = $('#timeLeft');
+const gameArea = $('#gameArea');
+const modalRoot = $('#modalRoot');
+const shopList = $('#shopList');
+const ownedSkinsEl = $('#ownedSkins');
+const ownedPowerupsEl = $('#ownedPowerups');
+const previewLarge = $('#previewLarge');
+const previewName = $('#previewName');
+const previewDesc = $('#previewDesc');
+const unequipBtn = $('#unequipBtn');
+
+/* ---------- Navigation helpers ---------- */
+function showScreen(name){
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  // update nav active
+  ['navHome','navShop','navLocker','navGame'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  if(name==='home') document.getElementById('navHome').classList.add('active');
+  if(name==='shop') document.getElementById('navShop').classList.add('active');
+  if(name==='locker') document.getElementById('navLocker').classList.add('active');
+  if(name==='game') document.getElementById('navGame').classList.add('active');
 }
-function startGame(){
-  alert('Game start (placeholder)');
+$('#playBtn').addEventListener('click', ()=> startRound());
+$('#homeShopBtn').addEventListener('click', ()=> showScreen('shop'));
+$('#homeLockerBtn').addEventListener('click', ()=> showScreen('locker'));
+$('#shopBack').addEventListener('click', ()=> showScreen('home'));
+$('#lockerBack').addEventListener('click', ()=> showScreen('home'));
+document.getElementById('navHome').addEventListener('click', ()=> showScreen('home'));
+document.getElementById('navShop').addEventListener('click', ()=> showScreen('shop'));
+document.getElementById('navLocker').addEventListener('click', ()=> showScreen('locker'));
+document.getElementById('navGame').addEventListener('click', ()=> startRound());
+
+/* ---------- Audio (WebAudio) ---------- */
+let audioCtx = null;
+function ensureAudio(){
+  if(audioCtx) return;
+  try{
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }catch(e){
+    audioCtx = null;
+  }
 }
+function playBeep(freq=440, duration=0.08, type='sine', gain=0.08){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.value = gain;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + duration);
+}
+
+/* ---------- Haptics ---------- */
+function vib(ms=10){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+
+/* ---------- Game configuration ---------- */
+const CONFIG = {
+  roundLenDefault: 30,
+  spawnInterval: 800,
+  targetLifetime: 1700,
+  targetSizes: ['small','medium','large'],
+  basePointsPerHit: 10,
+}
+
+/* ---------- Skins & Powerups Data ---------- */
+/* Unique IDs for items */
+const ITEMS = {
+  skins: [
+    { id:'common', name:'Common Skin', price:500, desc:'Bright blue & white bullseye — classic, clean.', color:'#2b9cff', perk:'No permanent perk' },
+    { id:'uncommon', name:'Uncommon Skin', price:1000, desc:'Cool silver rings with soft glow.', color:'#b8c9d9', perk:'No permanent perk' },
+    { id:'rare', name:'Rare Skin', price:2000, desc:'Bronze rings with textured center.', color:'#b08a4b', perk:'No permanent perk' },
+    { id:'epic', name:'Epic Skin', price:3500, desc:'Glossy purple target with shine.', color:'#8b5cf6', perk:'No permanent perk' },
+    { id:'legendary', name:'Legendary Skin', price:5000, desc:'Gold & black – grants permanent 2× coins and 2× score when equipped.', color:'#f6c84d', perk:'∞ 2× coins & ∞ 2× score' },
+  ],
+  powerups: [
+    { id:'small_time', name:'Small Time +10s', price:200, desc:'+10 seconds to round length', short:'+10s' },
+    { id:'big_time', name:'Big Time +25s', price:500, desc:'+25 seconds to round length', short:'+25s' },
+    { id:'slow_mo', name:'Slow-mo (5s)', price:400, desc:'Targets move slower for a short time', short:'Slow-mo' },
+    { id:'double_points', name:'Double Points (10s)', price:800, desc:'Double score for 10s', short:'2× pts' },
+    { id:'coin_frenzy', name:'Coin Frenzy (20s)', price:350, desc:'Double coins for 20s — one use per round', short:'2× coins' },
+  ]
+};
+
+/* Insert default skin into owned list if not present */
+if(!state.ownedSkins) state.ownedSkins = ['default'];
+if(!state.ownedSkins.includes('default')) state.ownedSkins.unshift('default');
+
+/* Helper: check ownership */
+function ownsSkin(id){ return state.ownedSkins.includes(id); }
+function ownsPowerup(id){ return !!state.ownedPowerups[id]; }
+
+/* ---------- Render Shop / Locker ---------- */
+function renderShop(){
+  shopList.innerHTML = '';
+  // Skins section
+  const headerSk = createEl('div','shop-item');
+  headerSk.style.justifyContent='center';
+  headerSk.innerHTML = '<strong style="font-size:15px">Skins</strong>';
+  shopList.appendChild(headerSk);
+
+  ITEMS.skins.forEach(s => {
+    const item = createEl('div','shop-item');
+    const left = createEl('div','shop-left');
+    const preview = createEl('div','shop-preview');
+    preview.style.background = s.color;
+    preview.innerHTML = renderSkinSVG(s.id);
+    const info = createEl('div','shop-info');
+    info.innerHTML = `<div style="font-weight:800;color:#fff">${s.name}</div><div class="muted">${s.desc}</div>`;
+    left.appendChild(preview); left.appendChild(info);
+
+    const right = createEl('div','shop-right');
+    const btn = createEl('button','buy-btn');
+    btn.dataset.itemid = s.id;
+    if(ownsSkin(s.id)){
+      btn.textContent = 'Owned';
+      btn.disabled = true;
+      btn.style.opacity = 0.7;
+    } else {
+      btn.textContent = `Buy ${s.price}`;
+      btn.addEventListener('click', ()=> confirmBuy('skin', s));
+    }
+    item.appendChild(left);
+    item.appendChild(btn);
+    shopList.appendChild(item);
+  });
+
+  // Powerups header
+  const headerP = createEl('div','shop-item');
+  headerP.style.justifyContent='center';
+  headerP.innerHTML = '<strong style="font-size:15px">Powerups</strong>';
+  shopList.appendChild(headerP);
+
+  ITEMS.powerups.forEach(p => {
+    const item = createEl('div','shop-item');
+    const left = createEl('div','shop-left');
+    const preview = createEl('div','shop-preview');
+    preview.style.background = '#111827';
+    preview.style.color = '#fff';
+    preview.innerHTML = `<div style="font-weight:900">${p.short}</div>`;
+    const info = createEl('div','shop-info');
+    info.innerHTML = `<div style="font-weight:800;color:#fff">${p.name}</div><div class="muted">${p.desc}</div>`;
+    left.appendChild(preview); left.appendChild(info);
+
+    const right = createEl('div','shop-right');
+    const btn = createEl('button','buy-btn');
+    btn.dataset.itemid = p.id;
+    const ownedCount = state.ownedPowerups[p.id] || 0;
+    btn.textContent = `Buy ${p.price}`;
+    btn.addEventListener('click', ()=> confirmBuy('powerup', p));
+    item.appendChild(left);
+    item.appendChild(btn);
+    shopList.appendChild(item);
+  });
+}
+
+function renderSkinSVG(id){
+  // return small inline svg markup for preview (string)
+  const templates = {
+    'default': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#ff6767"/><circle cx="50"cy="50"r="26"fill="#fff"/><circle cx="50"cy="50"r="12"fill="#ff6767"/></svg>`,
+    'common': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#2b9cff"/><circle cx="50"cy="50"r="26"fill="#fff"/><circle cx="50"cy="50"r="12"fill="#2b9cff"/></svg>`,
+    'uncommon': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#b8c9d9"/><circle cx="50"cy="50"r="26"fill="#fff"/><circle cx="50"cy="50"r="12"fill="#d1d9e6"/></svg>`,
+    'rare': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#b08a4b"/><circle cx="50"cy="50"r="26"fill="#fff"/><circle cx="50"cy="50"r="12"fill="#8a5a2b"/></svg>`,
+    'epic': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#8b5cf6"/><circle cx="50"cy="50"r="26"fill="#fff"/><circle cx="50"cy="50"r="12"fill="#5e2fd8"/></svg>`,
+    'legendary': `<svg width="56" height="56" viewBox="0 0 100 100"><circle cx="50"cy="50"r="40"fill="#f6c84d"/><circle cx="50"cy="50"r="26"fill="#000"/><circle cx="50"cy="50"r="12"fill="#f6c84d"/></svg>`,
+  };
+  return templates[id] || templates['default'];
+}
+
+/* ---------- PURCHASE FLOW ---------- */
+function confirmBuy(type, item){
+  // Confirmation modal
+  openModal(`
+    <h3>Buy ${item.name}?</h3>
+    <div class="muted">${item.desc}</div>
+    <div style="margin-top:10px; display:flex; gap:8px;">
+      <button id="confirmBuyBtn" class="big-btn" style="flex:1">Buy ${item.price}</button>
+      <button id="cancelBuyBtn" class="btn ghost" style="flex:1">Cancel</button>
+    </div>
+  `);
+  $('#confirmBuyBtn').addEventListener('click', ()=>{
+    if(state.coins < item.price){
+      alert('Not enough coins.');
+      closeModal();
+      return;
+    }
+    state.coins -= item.price;
+    if(type==='skin'){
+      if(!state.ownedSkins.includes(item.id)) state.ownedSkins.push(item.id);
+      // auto-equip after purchase for convenience
+      state.equippedSkin = item.id;
+      playBeep(880,0.09,'sine',0.08); vib(30);
+    } else if(type==='powerup'){
+      state.ownedPowerups[item.id] = (state.ownedPowerups[item.id]||0) + 1;
+      playBeep(760,0.12,'triangle',0.1); vib(24);
+    }
+    saveState();
+    refreshUI();
+    closeModal();
+  });
+  $('#cancelBuyBtn').addEventListener('click', ()=> closeModal());
+}
+
+/* Modal helpers */
+function openModal(html){
+  modalRoot.innerHTML = '';
+  modalRoot.style.display = 'block';
+  const back = createEl('div','modal-backdrop');
+  const modal = createEl('div','modal');
+  modal.innerHTML = html;
+  back.appendChild(modal);
+  modalRoot.appendChild(back);
+  back.addEventListener('click', (e)=>{ if(e.target===back) closeModal(); });
+}
+function closeModal(){ modalRoot.innerHTML=''; modalRoot.style.display='none'; }
+
+/* ---------- Locker UI ---------- */
+function renderLocker(){
+  // preview
+  const eq = state.equippedSkin || 'default';
+  previewLarge.innerHTML = renderSkinSVG(eq);
+  previewName.textContent = ITEMS.skins.find(s=>s.id===eq)?.name || 'Default';
+  previewDesc.textContent = ITEMS.skins.find(s=>s.id===eq)?.desc || '';
+
+  // owned skins
+  ownedSkinsEl.innerHTML = '';
+  state.ownedSkins.forEach(id => {
+    const d = createEl('div','card');
+    d.style.padding = '8px';
+    d.style.display = 'flex';
+    d.style.flexDirection = 'column';
+    d.style.alignItems='center';
+    d.style.width='84px';
+    d.style.cursor='pointer';
+    d.innerHTML = renderSkinSVG(id) + `<div style="font-size:12px;margin-top:6px;text-align:center">${(ITEMS.skins.find(s=>s.id===id)||{name:'Default'}).name||id}</div>`;
+    d.addEventListener('click', ()=>{
+      // equip
+      state.equippedSkin = id;
+      saveState();
+      renderLocker();
+      refreshUI();
+      playBeep(1200,0.08,'sine',0.06); vib(20);
+    });
+    ownedSkinsEl.appendChild(d);
+  });
+
+  // owned powerups
+  ownedPowerupsEl.innerHTML = '';
+  Object.keys(state.ownedPowerups).forEach(pid=>{
+    const count = state.ownedPowerups[pid];
+    if(!count) return;
+    const p = ITEMS.powerups.find(x=>x.id===pid);
+    const d = createEl('div','card');
+    d.style.padding='8px';
+    d.style.width='120px';
+    d.style.textAlign='center';
+    d.innerHTML = `<div style="font-weight:800">${p.name}</div><div class="muted">${p.desc}</div><div style="margin-top:6px;font-weight:900">${count} owned</div><button class="btn ghost" style="margin-top:8px">Use in Next Round</button>`;
+    // For now "Use" just flags it in state.equippedPowerups - we implement actual usages in game start
+    d.querySelector('button').addEventListener('click', ()=>{
+      // decrease count and mark as active for next round
+      if(state.ownedPowerups[pid] > 0){
+        state.ownedPowerups[pid]--;
+        state.equippedPowerups = state.equippedPowerups || [];
+        state.equippedPowerups.push(pid);
+        saveState();
+        renderLocker();
+        refreshUI();
+        playBeep(900,0.08,'sawtooth',0.06);
+      }
+    });
+    ownedPowerupsEl.appendChild(d);
+  });
+}
+
+/* ---------- Refresh UI (coins etc) ---------- */
+function refreshUI(){
+  coinDisplay.textContent = `Coins: ${state.coins}`;
+  renderShop();
+  renderLocker();
+}
+
+/* Initial render */
+refreshUI();
+
+/* ---------- Game runtime variables ---------- */
+let running=false;
+let score=0;
+let timeLeft=0;
+let spawnIntervalRef=null;
+let targetIdCounter=0;
+let hitsTimestamps=[]; // for avg time between clicks
+let pointsSinceLastCoin = 0;
+let sessionCoins=0;
+let activePowerups = {
+  coinFrenzyActive:false,
+  coinFrenzyRemaining:0,
+  doublePointsActive:false,
+  doublePointsRemaining:0,
+  slowMoActive:false,
+  slowMoRemaining:0,
+};
+let permanentMultipliers = {
+  score: 1,
+  coins: 1,
+};
+if(state.equippedSkin === 'legendary' || state.ownedSkins.includes('legendary') && state.equippedSkin === 'legendary'){
+  // ensure legendary effect when equipped
+}
+function applyPermanentMultipliersFromEquipped(){
+  const eq = state.equippedSkin;
+  if(eq === 'legendary'){
+    permanentMultipliers.score = 2;
+    permanentMultipliers.coins = 2;
+  } else {
+    permanentMultipliers.score = 1;
+    permanentMultipliers.coins = 1;
+  }
+}
+applyPermanentMultipliersFromEquipped();
+
+/* ---------- Target creation ---------- */
+function spawnTarget(){
+  if(!running) return;
+  const size = 64; // px - fixed for mobile clarity
+  const id = `t${++targetIdCounter}`;
+
+  const t = createEl('div','target');
+  t.style.width = size+'px';
+  t.style.height = size+'px';
+  t.style.left = Math.random() * (gameArea.clientWidth - size) + 'px';
+  t.style.top = Math.random() * (gameArea.clientHeight - size) + 'px';
+  // pick skin style from equippedSkin
+  const skin = state.equippedSkin || 'default';
+  const skinObj = ITEMS.skins.find(s=>s.id===skin) || {color:'#ff6767'};
+  t.innerHTML = getTargetInnerSVG(skin);
+  t.dataset.itemid = id;
+  t.style.opacity = 0;
+  gameArea.appendChild(t);
+  requestAnimationFrame(()=> t.style.opacity = 1);
+
+  // spawn sound
+  ensureAudio(); playBeep(640,0.07,'sine',0.02);
+
+  // lifetime removal
+  const life = setTimeout(()=> {
+    if(t.parentNode) {
+      t.style.opacity = 0;
+      setTimeout(()=> t.remove(), 220);
+    }
+  }, CONFIG.targetLifetime);
+
+  // touch & click handlers
+  function onHit(e){
+    e.stopPropagation();
+    if(!running) return;
+    // prevent double fire
+    t.removeEventListener('click', onHit);
+    t.removeEventListener('touchstart', onHit);
+    clearTimeout(life);
+
+    // scoring
+    const basePoints = CONFIG.basePointsPerHit;
+    const scoreMult = permanentMultipliers.score * (activePowerups.doublePointsActive?2:1);
+    const pointsGained = basePoints * scoreMult;
+    const prevScore = score;
+    score += pointsGained;
+    scoreEl.textContent = score;
+
+    // coins compute: track pointsSinceLastCoin and award 1 coin per 10 pts, multiplied by active & permanent multipliers
+    pointsSinceLastCoin += pointsGained;
+    const coinMult = permanentMultipliers.coins * (activePowerups.coinFrenzyActive?2:1);
+    let coinsThisHit = 0;
+    while(pointsSinceLastCoin >= 10){
+      pointsSinceLastCoin -= 10;
+      coinsThisHit += coinMult;
+    }
+    if(coinsThisHit>0){
+      state.coins += coinsThisHit;
+      sessionCoins += coinsThisHit;
+      coinDisplay.textContent = `Coins: ${state.coins}`;
+    }
+
+    // stats
+    hitsTimestamps.push(Date.now());
+
+    // play hit sound + vib
+    ensureAudio(); playBeep(1400,0.06,'sine',0.06);
+    vib(12);
+
+    // pop animation
+    t.style.transform = 'scale(1.25)';
+    t.style.opacity = 0;
+    setTimeout(()=> t.remove(), 160);
+  }
+  t.addEventListener('click', onHit);
+  t.addEventListener('touchstart', onHit, {passive:false});
+
+  return id;
+}
+
+/* Return inline SVG for target using equipped skin - crisp */
+function getTargetInnerSVG(skin){
+  // pick colors for rings from skin
+  const s = ITEMS.skins.find(x=>x.id===skin) || {color:'#ff6767'};
+  // default inner (3 rings + center)
+  const outer = s.color || '#ff6767';
+  const mid = '#fff';
+  const inner = s.color;
+  const center = (skin === 'legendary') ? '#000' : s.color;
+  // Provide a scalable SVG sized to container
+  return `
+    <svg viewBox="0 0 100 100" width="100%" height="100%" style="border-radius:50%; overflow:visible;">
+      <circle cx="50" cy="50" r="48" fill="${outer}" />
+      <circle cx="50" cy="50" r="32" fill="${mid}" />
+      <circle cx="50" cy="50" r="18" fill="${inner}" />
+      <circle cx="50" cy="50" r="8" fill="${center}" />
+    </svg>`;
+}
+
+/* ---------- Round control ---------- */
+let tickIntervalRef = null;
+function startRound(){
+  // init audio on first interaction if needed
+  ensureAudio();
+
+  // clear UI and switch to game
+  showScreen('game');
+  // reset runtime
+  running = true;
+  score = 0;
+  scoreEl.textContent = 0;
+  sessionCoins = 0;
+  pointsSinceLastCoin = 0;
+  hitsTimestamps = [];
+  // time length (allow user chosen? for simplicity using default)
+  timeLeft = CONFIG.roundLenDefault;
+  timeEl.textContent = timeLeft;
+  $('#sessionCoins').textContent = 0;
+
+  // load equipped powerups reserved from locker (state.equippedPowerups)
+  // reset active powerups
+  activePowerups = {
+    coinFrenzyActive:false, coinFrenzyRemaining:0,
+    doublePointsActive:false, doublePointsRemaining:0,
+    slowMoActive:false, slowMoRemaining:0
+  };
+
+  // check state.equippedPowerups and apply any one-time immediate effect (like Coin Frenzy starts when activated mid-round; for simplicity, we treat them as auto-available)
+  // Actually: equipped powerups were set in locker as "use in next round". We'll treat them as items available to activate: but to keep UI minimal, we will auto-activate time boosts immediately at round start.
+  if(Array.isArray(state.equippedPowerups) && state.equippedPowerups.length){
+    state.equippedPowerups.forEach(pid=>{
+      if(pid==='small_time') timeLeft += 10;
+      if(pid==='big_time') timeLeft += 25;
+      if(pid==='double_points'){ activePowerups.doublePointsActive = true; activePowerups.doublePointsRemaining = 10; }
+      if(pid==='slow_mo'){ activePowerups.slowMoActive = true; activePowerups.slowMoRemaining = 5; }
+      if(pid==='coin_frenzy'){ activePowerups.coinFrenzyActive = true; activePowerups.coinFrenzyRemaining = 20; }
+    });
+    // clear equippedPowerups after applying
+    state.equippedPowerups = [];
+    saveState();
+  }
+
+  applyPermanentMultipliersFromEquipped();
+
+  // spawn loop: if slow-mo active, spawn interval increases; else base
+  spawnIntervalRef = setInterval(()=>{
+    spawnTarget();
+  }, CONFIG.spawnInterval);
+
+  tickIntervalRef = setInterval(()=>{
+    timeLeft--;
+    // manage active temporary powerups countdown
+    if(activePowerups.coinFrenzyActive){
+      activePowerups.coinFrenzyRemaining--;
+      if(activePowerups.coinFrenzyRemaining <= 0) activePowerups.coinFrenzyActive = false;
+    }
+    if(activePowerups.doublePointsActive){
+      activePowerups.doublePointsRemaining--;
+      if(activePowerups.doublePointsRemaining <= 0) activePowerups.doublePointsActive = false;
+    }
+    if(activePowerups.slowMoActive){
+      activePowerups.slowMoRemaining--;
+      if(activePowerups.slowMoRemaining <= 0) activePowerups.slowMoActive = false;
+    }
+
+    timeEl.textContent = timeLeft;
+    if(timeLeft <= 0) endRound();
+  }, 1000);
+
+  // spawn immediate first target
+  spawnTarget();
+}
+
+/* ---------- End Round ---------- */
+function endRound(){
+  if(!running) return;
+  running = false;
+  clearInterval(spawnIntervalRef);
+  clearInterval(tickIntervalRef);
+  // remove all remaining targets
+  $$('.target', gameArea).forEach(t => t.remove());
+
+  // compute average time between clicks
+  let avg = 0;
+  if(hitsTimestamps.length >= 2){
+    let diffs = [];
+    for(let i=1;i<hitsTimestamps.length;i++) diffs.push(hitsTimestamps[i]-hitsTimestamps[i-1]);
+    avg = Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length)/1000; // seconds
+  } else avg = 0;
+
+  // sessionCoins already updated as we went, and state.coins already increased
+  // record highscore
+  state.highscores = state.highscores || [];
+  state.highscores.push({score, coinsEarned:sessionCoins, date: Date.now()});
+  state.highscores.sort((a,b)=>b.score-a.score);
+  if(state.highscores.length>10) state.highscores.length = 10;
+  saveState();
+
+  // show end modal
+  openModal(`
+    <div class="end-stats">
+      <h3>Round Ended</h3>
+      <div><strong>Score:</strong> ${score}</div>
+      <div><strong>Coins earned:</strong> ${sessionCoins}</div>
+      <div><strong>Avg time between clicks:</strong> ${avg} s</div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="playAgainBtn" class="big-btn" style="flex:1">Play Again</button>
+        <button id="returnHomeBtn" class="btn ghost" style="flex:1">Home</button>
+      </div>
+    </div>
+  `);
+  $('#playAgainBtn').addEventListener('click', ()=> { closeModal(); startRound(); });
+  $('#returnHomeBtn').addEventListener('click', ()=> { closeModal(); showScreen('home'); });
+}
+
+/* ---------- Helper: ensure shop buttons and owned state update ---------- */
+function rebindShopButtons(){
+  // shop buttons already created with listeners in renderShop via confirmBuy - refreshUI will re-render
+}
+
+/* ---------- Initial small UI wiring ---------- */
+document.body.addEventListener('touchstart', function initAudioOnce(){
+  ensureAudio();
+  document.body.removeEventListener('touchstart', initAudioOnce);
+}, {passive:true});
+
+/* ---------- Final touches: show prices on buy buttons always enforced by renderShop() ---------- */
+
+/* Run initial UI refresh */
+refreshUI();
+
+/* Make shop scroll nicely on mobile - already via CSS */
+
+/* ---------- Expose some debug global for testing (optional) ---------- */
+window._tg = {
+  state,
+  saveState,
+  showScreen,
+  startRound,
+  spawnTarget,
+  ITEMS,
+};
+
+/* ---------- NOTES: Additional polish you can enable later ----------
+ - Add service worker + manifest to make PWA offline + splash screens
+ - Add background music toggle
+ - Add particle animation on hit for extra polish
+ - Add leaderboard upload if desired
+------------------------------------------------------------------ */
+
 </script>
 </body>
 </html>
