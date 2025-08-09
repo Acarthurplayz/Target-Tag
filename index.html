@@ -1,163 +1,108 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Target Tag</title>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(180deg, #ff7e5f, #feb47b);
-      --panel-bg: rgba(255, 255, 255, 0.15);
-      --accent: #ff3e3e;
-      --text-color: #fff;
-      --shop-bg: #1e293b;
-      --shop-text: #f8fafc;
-    }
-    * { box-sizing: border-box; font-family: Inter, sans-serif; }
-    html, body, #app { height: 100%; margin: 0; background: var(--bg-gradient); color: var(--text-color); }
-    .container { max-width: 420px; margin: 0 auto; padding: 16px; }
-    header { display: flex; align-items: center; justify-content: space-between; }
-    h1 { font-size: 28px; margin: 0; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
-    .panel { background: var(--panel-bg); border-radius: 12px; padding: 12px; margin-top: 12px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    button { background: var(--accent); border: none; color: white; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-size: 16px; }
-    button:hover { opacity: 0.9; }
-    button.ghost { background: transparent; border: 2px solid white; }
-    #gameArea { position: relative; height: 520px; border-radius: 12px; overflow: hidden; background: #082f49; margin-top: 12px; }
-    .hud { position: absolute; left: 10px; top: 10px; display: flex; gap: 10px; align-items: center; }
-    .hud .stat { background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-weight: 600; }
-    .target { position: absolute; border-radius: 50%; background: radial-gradient(circle, white 20%, red 20% 40%, white 40% 60%, red 60%); cursor: pointer; }
-    .target.small { width: 48px; height: 48px; }
-    .target.medium { width: 72px; height: 72px; }
-    .target.large { width: 96px; height: 96px; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    #shopScreen { background: var(--shop-bg); color: var(--shop-text); padding: 16px; height: 520px; overflow-y: auto; border-radius: 12px; }
-    .shop-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 12px; }
-    .shop-item h3 { margin: 0; }
-    .shop-item p { font-size: 14px; margin: 4px 0; }
-    .flash { animation: flashEffect 0.5s ease; }
-    @keyframes flashEffect { from { background: yellow; } to { background: transparent; } }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Target Tag</title>
+<style>
+  /* Vibrant background and mobile-friendly layout */
+  html, body, #app {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(180deg, #ff7f50, #ff1493);
+    font-family: Arial, sans-serif;
+    color: white;
+  }
+  .screen { display: none; height: 100%; }
+  .screen.active { display: block; }
+  header { padding: 10px; text-align: center; font-size: 24px; font-weight: bold; }
+  #bottomNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+  }
+  #bottomNav button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  button { cursor: pointer; }
+  .shopItem {
+    background: rgba(255,255,255,0.15);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+  .shopItem h3 { margin: 0; }
+  .shopItem p { font-size: 14px; margin: 5px 0; }
+  .backBtn {
+    margin-top: 10px;
+    background: #ff3e3e;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
-  <div class="container" id="app">
-    <header>
-      <h1>🎯 Target Tag</h1>
-      <div id="coinDisplay">Coins: 0</div>
-    </header>
-
-    <div class="panel screen active" id="title">
-      <h2>Tap the targets as fast as you can!</h2>
-      <p>Earn 1 coin per 10 points. Buy skins and powerups in the shop.</p>
-      <div class="row">
-        <button id="playBtn">Play</button>
-        <button class="ghost" id="shopBtn">Shop</button>
-        <button class="ghost" id="lockerBtn">Locker</button>
-      </div>
-      <label>Round length:</label>
-      <select id="roundLen">
-        <option value="20">20s</option>
-        <option value="30" selected>30s</option>
-        <option value="60">60s</option>
-      </select>
+<div id="app">
+  <div class="screen active" id="titleScreen">
+    <header>🎯 Target Tag</header>
+    <div style="text-align:center;margin-top:20px;">
+      <button onclick="startGame()" style="padding:10px 20px;">Play</button>
     </div>
-
-    <div id="shopScreen" class="screen"></div>
-
-    <div id="gameArea" class="screen">
-      <div class="hud">
-        <div class="stat">Score: <span id="score">0</span></div>
-        <div class="stat">Time: <span id="time">0</span></div>
-      </div>
+    <div id="bottomNav">
+      <button onclick="showScreen('shopScreen')">Shop</button>
+      <button onclick="showScreen('lockerScreen')">Locker</button>
     </div>
   </div>
 
-  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-  <audio id="frenzySound" src="https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg"></audio>
+  <div class="screen" id="shopScreen">
+    <header>Item Shop</header>
+    <div class="shopItem">
+      <h3>Common Skin</h3>
+      <p>Bright blue with white bullseye.</p>
+      <button>Buy - 100 Coins</button>
+    </div>
+    <div class="shopItem">
+      <h3>Legendary Skin</h3>
+      <p>Gold target with permanent 2× coins & score.</p>
+      <button>Buy - 5000 Coins</button>
+    </div>
+    <div class="shopItem">
+      <h3>Coin Frenzy</h3>
+      <p>Double coins for 20s (once per round).</p>
+      <button>Buy - 500 Coins</button>
+    </div>
+    <button class="backBtn" onclick="showScreen('titleScreen')">Back</button>
+  </div>
 
-  <script>
-    let coins = 0, score = 0, timeLeft = 0, running = false, spawnTimer, tickTimer, frenzyActive = false;
-    const coinDisplay = document.getElementById('coinDisplay');
-    const scoreEl = document.getElementById('score');
-    const timeEl = document.getElementById('time');
-    const clickSound = document.getElementById('clickSound');
-    const frenzySound = document.getElementById('frenzySound');
-
-    const shopItems = [
-      { name: 'Common Target Skin', price: 500, desc: 'Basic colour change.' },
-      { name: 'Rare Target Skin', price: 2000, desc: 'Shiny blue target.' },
-      { name: 'Legendary Target Skin', price: 5000, desc: 'Gold target with permanent 2x coins & score.' },
-      { name: 'Extra Time +10s', price: 300, desc: 'Adds 10s to your round.' },
-      { name: 'Score Booster x2 (1 round)', price: 300, desc: 'Doubles score for one round.' },
-      { name: 'Coin Frenzy', price: 350, desc: 'Double coins for 20s (once per round).' }
-    ];
-
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    function loadShop() {
-      const shopEl = document.getElementById('shopScreen');
-      shopEl.innerHTML = '<h2>Item Shop</h2>';
-      shopItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'shop-item';
-        div.innerHTML = `<h3>${item.name}</h3><p>${item.desc}</p><button>Buy - ${item.price} coins</button>`;
-        shopEl.appendChild(div);
-      });
-    }
-
-    function startRound() {
-      score = 0; frenzyActive = false;
-      scoreEl.textContent = score;
-      timeLeft = parseInt(document.getElementById('roundLen').value);
-      timeEl.textContent = timeLeft;
-      running = true;
-      showScreen('gameArea');
-      spawnTargets();
-      tickTimer = setInterval(() => {
-        timeLeft--;
-        timeEl.textContent = timeLeft;
-        if (timeLeft <= 0) endRound();
-      }, 1000);
-    }
-
-    function spawnTargets() {
-      spawnTimer = setInterval(() => {
-        if (!running) return;
-        const t = document.createElement('div');
-        t.className = 'target medium';
-        t.style.left = Math.random() * (gameArea.clientWidth - 72) + 'px';
-        t.style.top = Math.random() * (gameArea.clientHeight - 72) + 'px';
-        t.onclick = () => {
-          clickSound.play();
-          let pts = 10;
-          if (frenzyActive) pts *= 2;
-          score += pts;
-          scoreEl.textContent = score;
-          t.remove();
-        };
-        gameArea.appendChild(t);
-        setTimeout(() => t.remove(), 1500);
-      }, 800);
-    }
-
-    function endRound() {
-      running = false;
-      clearInterval(spawnTimer);
-      clearInterval(tickTimer);
-      coins += Math.floor(score / 10);
-      coinDisplay.textContent = 'Coins: ' + coins;
-      alert(`Round over!\nScore: ${score}\nCoins Earned: ${Math.floor(score / 10)}`);
-      showScreen('title');
-    }
-
-    document.getElementById('playBtn').onclick = startRound;
-    document.getElementById('shopBtn').onclick = () => { loadShop(); showScreen('shopScreen'); };
-  </script>
+  <div class="screen" id="lockerScreen">
+    <header>Locker</header>
+    <p>Preview your unlocked skins and select one.</p>
+    <button class="backBtn" onclick="showScreen('titleScreen')">Back</button>
+  </div>
+</div>
+<script>
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function startGame(){
+  alert('Game start (placeholder)');
+}
+</script>
 </body>
 </html>
+
 
 
