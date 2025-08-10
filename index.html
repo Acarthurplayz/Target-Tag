@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#ff7a59">
+
+<!-- iOS support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Target Tag">
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Target Tag — Final</title>
@@ -787,6 +794,15 @@ window._TT = { state, refreshAll, startRound };
 /* ---- Save on page unload ---- */
 window.addEventListener('beforeunload', save);
 
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service worker registered:', reg.scope))
+        .catch(err => console.error('Service worker registration failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
